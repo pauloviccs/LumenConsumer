@@ -1,0 +1,11 @@
+appId: com.vibeone.pos
+productName: VibeOne POS
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+win:
+  target: 
+    - nsis

@@ -1,0 +1,51 @@
+version: '3.3'
+
+services:
+  evolution-api:
+    container_name: evolution-api
+    image: atendai/evolution-api:v2.1.1
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - DOCKER_ENV=true
+      - AUTHENTICATION_API_KEY=vibeone123
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - DATABASE_ENABLED=true
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution@postgres:5432/evolution
+      - DATABASE_PROVIDER=postgresql
+      - REDIS_ENABLED=true
+      - REDIS_URI=redis://redis:6379/0
+      - REDIS_PREFIX_KEY=evolution
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=evolution
+      - POSTGRES_DB=evolution
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  evolution_instances:
+  evolution_store:
+  postgres_data:
+  redis_data:

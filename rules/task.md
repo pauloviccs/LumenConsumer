@@ -1,0 +1,22 @@
+- [x] Phase 1-4: MVP Single Tenant (Completed Prototypes)
+  - [x] Basic Dashboard & Kanban
+  - [x] Order Card UI
+  - [x] Local Evolution Integration (Proof of Concept)
+  - [x] Browser Printing
+
+- [ ] Phase 5: The SaaS Transformation (Grandma-Friendly)
+  - [ ] Database Migration (Multi-Tenant)
+    - [ ] Create `tenants` table
+    - [ ] Add `tenant_id` to existing tables
+    - [ ] Update RLS Policies (Isolation Security)
+  - [ ] Authentication & Onboarding
+    - [ ] Login Screen (Supabase Auth)
+    - [ ] User Context (Auth Provider)
+  - [ ] Cloud API integration (The "Brain")
+    - [ ] `create-instance` Edge Function (Automates Evolution)
+    - [ ] `get-qrcode` Edge Function (Proxies QR)
+  - [ ] Frontend Updates
+    - [ ] Admin Page: "One Button" Connection
+    - [ ] Refactor Dashboard to use `tenant_id`
+  - [ ] Webhook Routing
+    - [ ] Update `handle-whatsapp` to find tenant by Instance Name
