@@ -197,13 +197,13 @@ export function Admin() {
                     <div className="flex items-center gap-2 mb-6">
                         <QrCode className="w-6 h-6 text-primary" />
                         <h2 className="text-xl font-semibold">Conexão WhatsApp</h2>
-                        <Badge variant={status === 'connected' ? 'ready' : 'destructive'}>
+                        <Badge className={status === 'connected' ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-red-500 hover:bg-red-600'}>
                             {status === 'connected' ? 'CONECTADO' : 'DESCONECTADO'}
                         </Badge>
                     </div>
 
                     <div className="space-y-4">
-                        <p className="text-zinc-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             Clique abaixo para conectar o WhatsApp da sua loja.
                         </p>
 

@@ -15,7 +15,7 @@ const ProtectedRoute = () => {
   return (
     <div className="flex bg-background min-h-screen">
       <Sidebar />
-      <div className="flex-1 ml-64">
+      <div className="flex-1 ml-20">
         <ConnectionBanner />
         <Outlet />
       </div>

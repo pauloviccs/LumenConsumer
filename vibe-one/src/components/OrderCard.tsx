@@ -1,174 +1,122 @@
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Order } from "@/types";
-import { Badge } from "./ui/badge";
-import { cn } from "@/lib/utils";
-import { Clock, CheckCircle2, ShoppingBag, QrCode, Printer } from "lucide-react";
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Clock, Phone, User, ChevronRight } from 'lucide-react';
+import { Order, STATUS_CONFIG } from '@/types/order';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface OrderCardProps {
     order: Order;
-    onAction?: (orderId: string) => void;
+    onAdvance?: (orderId: string) => void;
+    compact?: boolean;
 }
 
-export function OrderCard({ order, onAction }: OrderCardProps) {
-    const isLate = new Date(order.created_at).getTime() < Date.now() - 30 * 60 * 1000; // 30 mins
+export function OrderCard({ order, onAdvance, compact = false }: OrderCardProps) {
+    const config = STATUS_CONFIG[order.status];
+    const timeAgo = formatDistanceToNow(order.createdAt, {
+        addSuffix: true,
+        locale: ptBR
+    });
 
-    const getStatusVariant = () => {
-        switch (order.status) {
-            case 'pending_payment': return 'pending';
-            case 'preparing': return 'preparing';
-            case 'ready': return 'ready';
-            case 'completed': return 'completed';
-            default: return 'outline';
-        }
-    };
+    const minutesElapsed = Math.floor((Date.now() - order.createdAt.getTime()) / 60000);
+    const isUrgent = minutesElapsed > 30;
 
     return (
-        <div className={cn(
-            "w-full bg-card text-card-foreground rounded-xl border border-border shadow-sm p-4 hover:shadow-md transition-all",
-            isLate && order.status !== 'completed' && "border-red-900/50 bg-red-950/10"
-        )}>
+        <div
+            className={cn(
+                "group relative rounded-xl border bg-card p-4 transition-all duration-300",
+                "hover:border-primary/30 hover:shadow-glow",
+                order.status === 'paid' && "pulse-glow border-emerald-500/30",
+                order.status === 'pending_payment' && "border-red-500/20",
+                order.status === 'preparing' && "border-yellow-500/20",
+                compact && "p-3"
+            )}
+        >
             {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold">#{order.id.slice(-4)}</span>
-                        <Badge variant={getStatusVariant()}>
-                            {order.status.replace('_', ' ').toUpperCase()}
-                        </Badge>
-                    </div>
-                    <div className="flex items-center gap-1 text-muted-foreground text-sm mt-1">
-                        <Clock className="w-3 h-3" />
-                        <span>
-                            {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: ptBR })}
-                        </span>
-                    </div>
+            <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                    <span className="font-mono text-lg font-bold text-foreground">
+                        #{order.id.slice(-4).toUpperCase()}
+                    </span>
+                    <Badge
+                        variant="outline"
+                        className={cn("text-xs font-medium border", config.bgClass)}
+                    >
+                        {config.labelPt}
+                    </Badge>
                 </div>
-                <div className="text-right">
-                    <p className="font-semibold text-foreground">{order.customer_name}</p>
+
+                <div className={cn(
+                    "flex items-center gap-1 text-xs font-mono",
+                    isUrgent ? "text-red-400" : "text-muted-foreground"
+                )}>
+                    <Clock className="h-3 w-3" />
+                    {timeAgo}
                 </div>
             </div>
 
-            {/* Items List */}
-            <div className="space-y-2 mb-4">
-                {order.items?.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-2">
-                            <span className="bg-zinc-800 text-zinc-300 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold">
-                                {item.quantity}x
-                            </span>
-                            <span className="text-zinc-200">{item.product_name}</span>
-                        </div>
-                        {item.notes && (
-                            <span className="text-xs text-yellow-500/80 italic block ml-8">
-                                * {item.notes}
-                            </span>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            <div className="pt-4 border-t border-border flex justify-between items-center">
-                <div className="flex gap-4 items-center">
-                    <div className="font-extrabold text-lg">
-                        R$ {order.total_amount.toFixed(2)}
-                    </div>
-                    <button
-                        onClick={() => triggerPrint(order.id)}
-                        className="text-zinc-500 hover:text-white transition-colors p-2 rounded-full hover:bg-zinc-800"
-                        title="Imprimir Comanda">
-                        <Printer className="w-5 h-5" />
-                    </button>
+            {/* Customer Info */}
+            <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" />
+                    <span className="font-medium text-foreground">{order.customerName}</span>
                 </div>
-
-                {order.status === 'paid' && (
-                    <button
-                        onClick={() => onAction?.(order.id)}
-                        className="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
-                        <ShoppingBag className="w-4 h-4" />
-                        ENVIAR P/ COZINHA
-                    </button>
-                )}
-
-                {order.status === 'preparing' && (
-                    <button
-                        onClick={() => onAction?.(order.id)}
-                        className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
-                        <CheckCircle2 className="w-4 h-4" />
-                        PRONTO
-                    </button>
-                )}
-
-                {order.status === 'pending_payment' && (
-                    <button
-                        onClick={() => {
-                            // MOCK PIX: In future this comes from order.payment_pix_code or MercadoPago API
-                            const mockPix = "00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540510.005802BR5913Lumen Consumer6008Sao Paulo62070503***6304E2CA";
-                            navigator.clipboard.writeText(mockPix);
-                            alert("Copia e Cola PIX copiado!");
-                        }}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-dashed border-zinc-600">
-                        <QrCode className="w-4 h-4" />
-                        COPIAR PIX
-                    </button>
-                )}
+                <div className="flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span className="font-mono text-xs">
+                        {order.customerPhone.slice(-4)}
+                    </span>
+                </div>
             </div>
 
-            {/* Hidden Print Structure */}
-            <div id={`print-${order.id}`} className="print-area hidden">
-                <div className="p-4 font-mono text-sm max-w-[300px] mx-auto border-b-2 border-dashed border-black pb-4 mb-4">
-                    <h1 className="text-xl font-black text-center mb-2">LUMEN BURGER</h1>
-                    <p className="text-center mb-4 text-xs">Rua da Fome, 123 - Vibe City</p>
-
-                    <div className="flex justify-between font-bold text-lg mb-2">
-                        <span>PEDIDO</span>
-                        <span>#{order.id.slice(-4)}</span>
-                    </div>
-                    <div className="mb-4 text-xs">
-                        <p>Cliente: {order.customer_name}</p>
-                        <p>Data: {new Date(order.created_at).toLocaleString('pt-BR')}</p>
-                    </div>
-
-                    <div className="border-t border-b border-black py-2 mb-4 space-y-1">
-                        {order.items?.map(item => (
-                            <div key={item.id}>
-                                <div className="flex justify-between font-bold">
-                                    <span>{item.quantity}x {item.product_name}</span>
-                                    <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
-                                </div>
-                                {item.notes && <p className="text-xs italic ml-4">({item.notes})</p>}
+            {/* Items */}
+            {!compact && (
+                <div className="space-y-1.5 mb-4 border-t border-border/50 pt-3">
+                    {order.items.map(item => (
+                        <div key={item.id} className="flex items-start justify-between text-sm">
+                            <div className="flex-1">
+                                <span className="font-mono text-primary mr-1">{item.quantity}x</span>
+                                <span className="text-foreground">{item.productName}</span>
+                                {item.notes && (
+                                    <p className="text-xs text-muted-foreground italic mt-0.5">
+                                        → {item.notes}
+                                    </p>
+                                )}
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="flex justify-between text-xl font-black">
-                        <span>TOTAL</span>
-                        <span>R$ {order.total_amount.toFixed(2)}</span>
-                    </div>
-
-                    <div className="mt-8 text-center text-xs">
-                        <p>*** NÃO É DOCUMENTO FISCAL ***</p>
-                    </div>
+                            <span className="font-mono text-muted-foreground">
+                                R$ {(item.price * item.quantity).toFixed(2)}
+                            </span>
+                        </div>
+                    ))}
                 </div>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                <div className="font-mono">
+                    <span className="text-xs text-muted-foreground">Total</span>
+                    <p className="text-lg font-bold text-foreground">
+                        R$ {order.totalAmount.toFixed(2)}
+                    </p>
+                </div>
+
+                {config.action && onAdvance && (
+                    <Button
+                        onClick={() => onAdvance(order.id)}
+                        className={cn(
+                            "font-semibold transition-all duration-200",
+                            order.status === 'paid' && "bg-emerald-600 hover:bg-emerald-500",
+                            order.status === 'preparing' && "bg-yellow-600 hover:bg-yellow-500 text-background",
+                            order.status === 'ready' && "bg-cyan-600 hover:bg-cyan-500",
+                            order.status === 'delivering' && "bg-primary hover:bg-primary/90",
+                        )}
+                    >
+                        {config.action}
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                )}
             </div>
         </div>
     );
-}
-
-// Helper to Trigger Print
-// We put this outside avoiding clutter, but effectively we just need to isolate the div
-// Since we used a class .print-area, we need to toggle 'hidden' on this specific ID before printing
-function triggerPrint(orderId: string) {
-    const printContent = document.getElementById(`print-${orderId}`);
-    if (printContent) {
-        // Temporarily make it visible and everything else hidden is handled by @media print
-        // Actually, our CSS says body * hidden, .print-area visible.
-        // So we just need to make sure this SPECIFIC print-area is the one visible on screen?
-        // No, @media print will show ALL .print-area. We need to hide others.
-        // Quickest hack: swap class 'hidden' to 'block' then print then swap back.
-
-        printContent.classList.remove('hidden');
-        window.print();
-        printContent.classList.add('hidden');
-    }
 }
