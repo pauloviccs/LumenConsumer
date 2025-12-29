@@ -28,20 +28,30 @@ export function Dashboard() {
     useEffect(() => {
         fetchOrders();
 
+        let debounceTimer: NodeJS.Timeout;
+
+        const debouncedFetch = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                console.log('Debounced fetch executing...');
+                fetchOrders();
+            }, 1000); // 1s debounce buffer
+        };
+
         const subscription = supabase
-            .channel('public:orders')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-                console.log('Change received!', payload);
-                playAlert(); // Sound on new order
-                fetchOrders();
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, () => {
-                fetchOrders();
+            .channel('public:orders:dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                console.log('Change received, scheduling fetch:', payload);
+                if (payload.eventType === 'INSERT') {
+                    playAlert();
+                }
+                debouncedFetch();
             })
             .subscribe();
 
         return () => {
             supabase.removeChannel(subscription);
+            clearTimeout(debounceTimer);
         };
     }, [playAlert]);
 

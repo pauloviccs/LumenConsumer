@@ -42,14 +42,26 @@ export function Kitchen() {
 
         const subscription = supabase
             .channel('public:orders:kitchen')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-                console.log('Kitchen update:', payload);
-                // We need to re-fetch to get the relations (items) correctly mapped
-                // Or manually construct the Order object if we trust the payload has everything (it usually doesn't have relations)
-                if (payload.new && (payload.new as any).status === 'preparing') {
-                    playAlert();
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload: any) => {
+                const newStatus = payload.new.status;
+                const oldStatus = payload.old.status;
+
+                // Only fetch if the order IS preparing, WAS preparing, or BECAME preparing
+                if (newStatus === 'preparing' || oldStatus === 'preparing') {
+                    console.log('Kitchen update relevant:', payload);
+                    if (newStatus === 'preparing' && oldStatus !== 'preparing') {
+                        playAlert();
+                    }
+                    fetchOrders();
                 }
-                fetchOrders();
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload: any) => {
+                // Only relevant if inserted directly as preparing (rare but possible)
+                if (payload.new.status === 'preparing') {
+                    console.log('Kitchen new order relevant:', payload);
+                    playAlert();
+                    fetchOrders();
+                }
             })
             .subscribe();
 
