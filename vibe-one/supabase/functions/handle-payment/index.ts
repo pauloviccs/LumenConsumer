@@ -5,47 +5,61 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Mock Mercado Pago Access Token for now
 const MP_ACCESS_TOKEN = Deno.env.get('MP_ACCESS_TOKEN')
 
 serve(async (req) => {
     try {
         const url = new URL(req.url)
-        // Mercado Pago sends topic/id in query params or body depending on version
-        // We will assume V1 Webhook: receiving { action: 'payment.updated', data: { id: '...' } }
-
         const body = await req.json()
-        console.log("MP Webhook:", body)
+        console.log("MP Webhook:", JSON.stringify(body))
 
         const paymentId = body.data?.id || body.id
         const action = body.action || body.type
 
         if (action === 'payment.updated' && paymentId) {
-            // In real world: Fetch Payment Status from MP API to ensure it's approved
-            // const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, { headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` } })
-            // const paymentData = await res.json()
-            // if (paymentData.status === 'approved') ...
+            if (!MP_ACCESS_TOKEN) {
+                console.error("Missing MP_ACCESS_TOKEN");
+                throw new Error("Server Config Error");
+            }
 
-            // For MVP/Demo: We trust the webhook (or simulate approval)
-            console.log(`Processing payment ${paymentId}`)
+            console.log(`Verifying payment ${paymentId} with Mercado Pago...`);
 
-            // Find order with this payment_id (we need to save payment_id in order first)
-            // OR, for the MVP, we assume the 'external_reference' in MP was the Order ID.
+            const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+                headers: {
+                    Authorization: `Bearer ${MP_ACCESS_TOKEN}`
+                }
+            });
 
-            // Let's assume we pass the Order ID as external_reference when generating PIX.
-            // For this handler, we will try to find the order by matching the ID if we had stored it.
+            if (!res.ok) {
+                console.error(`MP API Error: ${res.status} ${res.statusText}`);
+                throw new Error("Failed to fetch payment status from MP");
+            }
 
-            // MVP SHORTCUT: We will not actually query MP because we don't have a valid token yet.
-            // We will just log that if we HAD the reference, we would update it.
+            const paymentData = await res.json();
+            console.log(`Payment Status: ${paymentData.status}`);
 
-            /* 
-            await supabase
-              .from('orders')
-              .update({ status: 'paid' })
-              .eq('id', external_reference) 
-            */
+            if (paymentData.status === 'approved') {
+                const externalReference = paymentData.external_reference;
 
-            console.log("Payment Logic Ready. Need MP Credentials to finalize.")
+                // If we attached the Order ID as external_reference
+                if (externalReference) {
+                    const { error: updateError } = await supabase
+                        .from('orders')
+                        .update({
+                            status: 'paid',
+                            payment_id: String(paymentId) // Store the MP ID
+                        })
+                        .eq('id', externalReference);
+
+                    if (updateError) {
+                        console.error("Supabase Update Error:", updateError);
+                        throw updateError;
+                    }
+                    console.log(`Order ${externalReference} marked as PAID.`);
+                } else {
+                    console.warn("Payment approved but missing external_reference (Order ID).");
+                }
+            }
         }
 
         return new Response(JSON.stringify({ success: true }), { status: 200 })

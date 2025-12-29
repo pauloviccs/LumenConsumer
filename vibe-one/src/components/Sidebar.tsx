@@ -4,9 +4,11 @@ import {
     ChefHat,
     Settings,
     Zap,
-    Package
+    Package,
+    LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,6 +19,7 @@ const navItems = [
 
 export function Sidebar() {
     const location = useLocation();
+    const { signOut } = useAuth();
 
     return (
         <aside className="fixed left-0 top-0 z-40 h-screen w-20 flex flex-col bg-sidebar border-r border-sidebar-border">
@@ -63,9 +66,19 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Status Indicator */}
-            <div className="p-4 border-t border-sidebar-border">
-                <div className="flex items-center justify-center">
+            {/* Footer Actions */}
+            <div className="flex flex-col items-center gap-4 pb-4">
+                {/* Logout Button */}
+                <button
+                    onClick={signOut}
+                    className="group relative flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all duration-200"
+                    title="Sair"
+                >
+                    <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                </button>
+
+                {/* Status Indicator */}
+                <div className="p-4 border-t border-sidebar-border w-full flex justify-center">
                     <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="sr-only">Online</span>

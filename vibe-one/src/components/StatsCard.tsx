@@ -10,6 +10,7 @@ interface StatsCardProps {
         isPositive: boolean;
     };
     variant?: 'default' | 'primary' | 'warning' | 'success';
+    description?: string;
 }
 
 export function StatsCard({
@@ -17,7 +18,8 @@ export function StatsCard({
     value,
     icon: Icon,
     trend,
-    variant = 'default'
+    variant = 'default',
+    description
 }: StatsCardProps) {
     return (
         <div className={cn(
@@ -50,6 +52,11 @@ export function StatsCard({
                             trend.isPositive ? "text-emerald-400" : "text-red-400"
                         )}>
                             {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+                        </p>
+                    )}
+                    {description && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {description}
                         </p>
                     )}
                 </div>

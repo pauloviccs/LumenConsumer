@@ -3,6 +3,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Kitchen } from './pages/Kitchen';
 import { Admin } from './pages/Admin';
 import { Login } from './pages/Login';
+import { Products } from './pages/Products';
 import { ConnectionBanner } from './components/ConnectionBanner';
 import { Sidebar } from './components/Sidebar';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/kitchen" element={<Kitchen />} />
+              <Route path="/products" element={<Products />} />
               <Route path="/admin" element={<Admin />} />
             </Route>
           </Routes>

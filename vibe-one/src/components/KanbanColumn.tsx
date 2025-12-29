@@ -6,9 +6,10 @@ interface KanbanColumnProps {
     status: OrderStatus;
     orders: Order[];
     onAdvanceOrder: (orderId: string) => void;
+    onCancelOrder?: (orderId: string) => void;
 }
 
-export function KanbanColumn({ status, orders, onAdvanceOrder }: KanbanColumnProps) {
+export function KanbanColumn({ status, orders, onAdvanceOrder, onCancelOrder }: KanbanColumnProps) {
     const config = STATUS_CONFIG[status];
 
     return (
@@ -49,6 +50,7 @@ export function KanbanColumn({ status, orders, onAdvanceOrder }: KanbanColumnPro
                             <OrderCard
                                 order={order}
                                 onAdvance={onAdvanceOrder}
+                                onCancel={onCancelOrder}
                             />
                         </div>
                     ))

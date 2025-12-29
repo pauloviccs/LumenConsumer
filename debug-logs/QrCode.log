@@ -1,0 +1,21 @@
+index-oW9DsSnK.js:97 --- STARTING HANDLE CONNECT ---
+index-oW9DsSnK.js:97 Config: {EVO_URL: 'http://localhost:8080', EVO_KEY: 'vibeone123'}
+index-oW9DsSnK.js:97 User found: 5aefd0fb-0535-4d34-a11f-047dc33ef823
+index-oW9DsSnK.js:97 Instance Name: tenant_00761d97fb4042fb8c2c69e3bf860fb4
+index-oW9DsSnK.js:97 Checking existence...
+index-oW9DsSnK.js:97 Using localhost for API. Ensure backend is reachable.
+be @ index-oW9DsSnK.js:97
+await in be
+Lg @ index-oW9DsSnK.js:8
+(anonymous) @ index-oW9DsSnK.js:8
+Ih @ index-oW9DsSnK.js:8
+fd @ index-oW9DsSnK.js:8
+Cd @ index-oW9DsSnK.js:9
+dS @ index-oW9DsSnK.js:9
+index-oW9DsSnK.js:97 Check Data: {instance: {…}}
+index-oW9DsSnK.js:97 Instance exists but not open. Deleting... connecting
+index-oW9DsSnK.js:97 Creating Fresh Instance...
+index-oW9DsSnK.js:97 Creation Data: {instance: {…}, hash: 'tenant_00761d97fb4042fb8c2c69e3bf860fb4', webhook: {…}, websocket: {…}, rabbitmq: {…}, …}hash: "tenant_00761d97fb4042fb8c2c69e3bf860fb4"instance: {instanceName: 'tenant_00761d97fb4042fb8c2c69e3bf860fb4', instanceId: '0fe29fd6-1e75-40b3-9d00-e5a78c73316e', integration: 'WHATSAPP-BAILEYS', webhookWaBusiness: null, accessTokenWaBusiness: '', …}qrcode: {count: 0}rabbitmq: {}settings: {rejectCall: false, msgCall: '', groupsIgnore: false, alwaysOnline: false, readMessages: false, …}sqs: {}webhook: {}websocket: {}[[Prototype]]: Object
+index-oW9DsSnK.js:97 Fetching QR (Fallback)...
+index-oW9DsSnK.js:97 Connect Data: {count: 0}
+index-oW9DsSnK.js:97 --- END HANDLE CONNECT ---

@@ -9,10 +9,11 @@ import { cn } from '@/lib/utils';
 interface OrderCardProps {
     order: Order;
     onAdvance?: (orderId: string) => void;
+    onCancel?: (orderId: string) => void;
     compact?: boolean;
 }
 
-export function OrderCard({ order, onAdvance, compact = false }: OrderCardProps) {
+export function OrderCard({ order, onAdvance, onCancel, compact = false }: OrderCardProps) {
     const config = STATUS_CONFIG[order.status];
     const timeAgo = formatDistanceToNow(order.createdAt, {
         addSuffix: true,
@@ -101,21 +102,36 @@ export function OrderCard({ order, onAdvance, compact = false }: OrderCardProps)
                     </p>
                 </div>
 
-                {config.action && onAdvance && (
-                    <Button
-                        onClick={() => onAdvance(order.id)}
-                        className={cn(
-                            "font-semibold transition-all duration-200",
-                            order.status === 'paid' && "bg-emerald-600 hover:bg-emerald-500",
-                            order.status === 'preparing' && "bg-yellow-600 hover:bg-yellow-500 text-background",
-                            order.status === 'ready' && "bg-cyan-600 hover:bg-cyan-500",
-                            order.status === 'delivering' && "bg-primary hover:bg-primary/90",
-                        )}
-                    >
-                        {config.action}
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                )}
+                <div className="flex items-center gap-2">
+                    {/* Cancel Button */}
+                    {order.status === 'pending_payment' && onCancel && (
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => onCancel(order.id)}
+                            className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20"
+                        >
+                            Cancelar
+                        </Button>
+                    )}
+
+                    {/* Action Button */}
+                    {config.action && onAdvance && (
+                        <Button
+                            onClick={() => onAdvance(order.id)}
+                            className={cn(
+                                "font-semibold transition-all duration-200",
+                                order.status === 'paid' && "bg-emerald-600 hover:bg-emerald-500",
+                                order.status === 'preparing' && "bg-yellow-600 hover:bg-yellow-500 text-background",
+                                order.status === 'ready' && "bg-cyan-600 hover:bg-cyan-500",
+                                order.status === 'delivering' && "bg-primary hover:bg-primary/90",
+                            )}
+                        >
+                            {config.action}
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                    )}
+                </div>
             </div>
         </div>
     );
